@@ -35,7 +35,7 @@ struct Enemy
 struct Circle
 {
 	int rad;
-	int r, c;
+	float r, c;
 };
 
 struct Missile
@@ -52,6 +52,14 @@ struct Bullet
 	DIR Direction;
 	Pos position;
 	Circle C;
+};
+
+struct BOMB
+{
+	Texture2D texture;
+	Circle C;
+	int c;
+	float r;
 };
 
 struct Plane
@@ -80,6 +88,22 @@ void initPlayer(Player& p)
 	p.Collider.y = p.c_position.r + 5;
 }
 
+void initEnemy(Enemy e[])
+{
+	for (int i = 0;i < NoOfEnemies;i++)
+	{
+		e[i].ETexture = LoadTexture("Enemy.png");
+		e[i].ETexture.height = 150, e[i].ETexture.width = 100;
+		e[i].Eposition.r = ScreenHeight - e[i].ETexture.height;
+		e[i].Eposition.c = ScreenWidth + (i * 50) + 400;
+		e[i].speed = 1;
+		e[i].ColliderE.x = e[i].Eposition.c + 10;
+		e[i].ColliderE.y = e[i].Eposition.r + 20;
+		e[i].ColliderE.width = e[i].ETexture.width - 20;
+		e[i].ColliderE.height = e[i].ETexture.height - 40;
+	}
+}
+
 void init(Background& bg1, Player& p, Bullet& b, Plane& Jahaz, Background& bg2, Enemy e[])
 {
 	bg1.bg.width = ScreenWidth, bg1.bg.height = ScreenHeight;
@@ -105,18 +129,7 @@ void init(Background& bg1, Player& p, Bullet& b, Plane& Jahaz, Background& bg2, 
 	Jahaz.R_Collider.y = Jahaz.p.r + 10;
 	DrawTexture(Jahaz.texture, Jahaz.p.c, Jahaz.p.r, RAYWHITE);
 
-	for (int i = 0;i < NoOfEnemies;i++)
-	{
-		e[i].ETexture = LoadTexture("Enemy.png");
-		e[i].ETexture.height = 150, e[i].ETexture.width = 100;
-		e[i].Eposition.r = ScreenHeight - e[i].ETexture.height;
-		e[i].Eposition.c = ScreenWidth - e[i].ETexture.width - 10 - (i * 50);
-		e[i].speed = 1;
-		e[i].ColliderE.x = e[i].Eposition.c + 10;
-		e[i].ColliderE.y = e[i].Eposition.r + 20;
-		e[i].ColliderE.width = e[i].ETexture.width - 20;
-		e[i].ColliderE.height = e[i].ETexture.height - 40;
-	}
+	initEnemy(e);
 }
 
 void UpdatePlayer(Player& p)
@@ -180,9 +193,9 @@ bool EnemyKilled(Enemy e, Bullet bullet[], int size)
 	return false;
 }
 
-void DelEnemy(Enemy& e)
+void DelEnemy(Enemy& e,int i)
 {
-	e.Eposition.c = ScreenWidth + 400;
+	e.Eposition.c = ScreenWidth + (i * 50) + 400;
 	e.ColliderE.width = 0;
 	e.ColliderE.height = 0;
 }
@@ -418,16 +431,71 @@ bool MissileTouchesPlayer(Missile Missiles[], int& size, Plane Jahaz, Player p)
 	return false;
 }
 
-void BulletTouchesEnemy(Enemy e[], Bullet b[], int size,int &score)
+void BulletTouchesEnemy(Enemy e[], Bullet b[], int &size,int &score)
 {
 	for (int i = 0;i < NoOfEnemies;i++)
 	{
 		if (EnemyKilled(e[i], b, size))
 		{
-			DelEnemy(e[i]);
+			DelEnemy(e[i], i);
+			deleteIndex(b, size, i);
 			score += 100;
 		}
 	}
+}
+
+void UpdateBomb(BOMB bomb[])
+{
+	for(int i=0;i<NoOfEnemies;i++)
+	{
+		bomb[i].r += 0.5;
+		bomb[i].c -= 2;
+		bomb[i].C.r += 0.5;
+		bomb[i].C.c -= 2;
+		DrawTexture(bomb[i].texture, bomb[i].c, bomb[i].r, RAYWHITE);
+	}
+}
+
+void initbomb(Enemy e[], BOMB bomb[])
+{
+	for(int i=0;i<NoOfEnemies;i++)
+	{
+		bomb[i].texture = LoadTexture("bomb.png");
+		bomb[i].texture.width = 60;
+		bomb[i].texture.height = 60;
+		bomb[i].r = e[i].Eposition.r - 10;
+		bomb[i].c = e[i].Eposition.c;
+		DrawTexture(bomb[i].texture, bomb[i].c, bomb[i].r, RAYWHITE);
+		bomb[i].C.rad = bomb[i].texture.height / 2 - 10;
+		bomb[i].C.r = bomb[i].r + 5;
+		bomb[i].C.c = bomb[i].c + 5;
+	}
+}
+
+void BombDestroy(BOMB bomb[],Enemy e[])
+{
+	for(int i=0;i<NoOfEnemies;i++)
+	{
+		if (bomb[i].r >= ScreenHeight)
+		{
+			initbomb(e, bomb);
+		}
+	}
+}
+
+bool BombtouchesPlayer(Player P,BOMB bomb[])
+{
+	Vector2 temp;
+	for (int i = 0;i < NoOfEnemies;i++)
+	{
+		temp.x = bomb[i].c;
+		temp.y = bomb[i].r;
+		if (CheckCollisionCircleRec(temp, (float)(bomb[i].C.rad), P.Collider))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 int main()
@@ -440,6 +508,7 @@ int main()
 	bg2.bg = LoadTexture("bg2.png");
 	Player p;
 	Bullet b[Capacity]{};
+	BOMB bomb[NoOfEnemies];
 	Missile Missiles[Capacity];
 	Enemy e[NoOfEnemies] = { };
 	Plane Jahaz;
@@ -449,9 +518,9 @@ int main()
 	int i = 0, count = 0, Msize = 0, score = 0;
 	int elapsed = 0, PReSpawn = 0, temp = 0, lives = 3;
 	init(bg1, p, b[i], Jahaz, bg2, e);
+	initbomb(e, bomb);
 	while (lives > 0)
 	{
-
 		if (GetKeyPressed() == KEY_ESCAPE)
 		{
 			break;
@@ -484,14 +553,24 @@ int main()
 			PRS = time(0);
 			PReSpawn = 0;
 		}
+		if (BombtouchesPlayer(p, bomb))
+		{
+			initPlayer(p);
+			initEnemy(e);
+			initbomb(e, bomb);
+			lives--;
+		}
 		UpdatePlane(Jahaz, count);
 		UpdatePlayer(p);
+		UpdateBomb(bomb);
 		BulletTouchesEnemy(e, b, i,score);
-
+		BombDestroy(bomb, e);
+		
 		if (EnemytouchesPlayer(e, p))
 		{
 			lives--;
 			initPlayer(p);
+			initEnemy(e);
 		}
 		UpdateMissiles(Missiles, Msize, Jahaz);
 		if (MissileTouchesPlayer(Missiles, Msize, Jahaz, p))
@@ -502,16 +581,39 @@ int main()
 		if (IsKeyDown(KEY_X))
 			Shoot(p, b[i]), i++;
 		UpdateBullet(b, i);
-
 		EndDrawing();
+		if (score >= 5000)
+			break;
 	}
 
-	while (true)
+	if (score >= 5000)
 	{
-		BeginDrawing();
-		ClearBackground(BLACK);
-		DrawText("GAME OVER", 100, 250, 100, RAYWHITE), CT = time(0);
-		EndDrawing();
+		while (true)
+		{
+
+			if (GetKeyPressed() == KEY_ESCAPE)
+			{
+				break;
+			}
+			BeginDrawing();
+			ClearBackground(BLACK);
+			DrawText("LEVEL 1 CLEARED", 90, 250, 75, RAYWHITE), CT = time(0);
+			EndDrawing();
+		}
+	}
+	else
+	{
+		while (true)
+		{
+			if (GetKeyPressed() == KEY_ESCAPE)
+			{
+				break;
+			}
+			BeginDrawing();
+			ClearBackground(BLACK);
+			DrawText("GAME OVER", 100, 250, 100, RAYWHITE), CT = time(0);
+			EndDrawing();
+		}
 	}
 
 	return 0;
