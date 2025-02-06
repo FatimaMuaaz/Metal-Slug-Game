@@ -6,6 +6,9 @@ const int ScreenWidth = 800;
 const int Capacity = 1000;
 const int NoOfEnemies = 3;
 
+int score = 0;
+int lives = 3;
+
 struct Pos
 {
 	int r, c;
@@ -592,7 +595,7 @@ void initlogo(Background &logo)
 	logo.position.r = 0;
 }
 
-int main()
+int main3()
 {
 	SetTargetFPS(90);
 	InitWindow(ScreenWidth, ScreenHeight, "Metal Slug");
@@ -612,8 +615,8 @@ int main()
 	time_t CT = time(0);
 	time_t PRS = time(0);
 	time_t temptime;
-	int i = 0, count = 0, Msize = 0, score = 0;
-	int elapsed = 0, PReSpawn = 0, temp = 0, lives = 3;
+	int i = 0, count = 0, Msize = 0;
+	int elapsed = 0, PReSpawn = 0, temp = 0;
 	init(bg1, p, b[i], Jahaz, bg2, e);
 	initbomb(e, bomb);
 	Background logo;
@@ -633,7 +636,7 @@ int main()
 			break;
 		}
 		BeginDrawing();
-		ClearBackground(RAYWHITE);
+		ClearBackground(BLACK);
 		MovingBackground(bg1, bg2);
 		DrawTexture(a.textureA, a.PositionA.c, a.PositionA.r, RAYWHITE);
 		MoveEnemy(e);
@@ -706,9 +709,225 @@ int main()
 			}
 			BeginDrawing();
 			ClearBackground(BLACK);
+			DrawText("LEVEL 3 CLEARED", 80, 250, 75, RAYWHITE), CT = time(0);
+			EndDrawing();
+		}
+	}
+	else
+	{
+		while (true)
+		{
+			if (GetKeyPressed() == KEY_ESCAPE)
+			{
+				break;
+			}
+			BeginDrawing();
+			ClearBackground(BLACK);
+			DrawText("GAME OVER", 100, 250, 100, RAYWHITE), CT = time(0);
+			EndDrawing();
+		}
+	}
+	return 0;
+}
+
+int main2()
+{
+	SetTargetFPS(90);
+	InitWindow(ScreenWidth, ScreenHeight, "Metal Slug");
+	Background bg1;
+	bg1.bg = LoadTexture("bg1.png");
+	Background bg2;
+	bg2.bg = LoadTexture("bg2.png");
+	Player p;
+	Bullet b[Capacity]{};
+	Missile Missiles[Capacity];
+	Enemy e[NoOfEnemies] = { };
+	Plane Jahaz;
+	time_t CT = time(0);
+	time_t PRS = time(0);
+	time_t temptime;
+	int i = 0, count = 0, Msize = 0;
+	int elapsed = 0, PReSpawn = 0, temp = 0;
+	init(bg1, p, b[i], Jahaz, bg2, e);
+	Background logo;
+	initlogo(logo);
+	while (!IsKeyPressed(KEY_ENTER))
+	{
+		BeginDrawing();
+		ClearBackground(BLACK);
+		DrawTexture(logo.bg, logo.position.c, logo.position.r, RAYWHITE);
+		DrawText("CLICK ENTER TO CONTINUE.....", 225, 550, 20, RAYWHITE);
+		EndDrawing();
+	}
+	while (lives > 0)
+	{
+		if (GetKeyPressed() == KEY_ESCAPE)
+		{
+			break;
+		}
+		BeginDrawing();
+		ClearBackground(BLACK);
+		MovingBackground(bg1, bg2);
+		DrawText(TextFormat("LIVES = %d", lives), 10, 10, 30, RAYWHITE);
+		DrawText(TextFormat("SCORE = %d", score), 10, 45, 30, RAYWHITE);
+
+		DrawTexture(p.p_Texture, p.c_position.c, p.c_position.r, RAYWHITE);
+
+		time_t NT = time(0);
+		elapsed = NT - CT;
+		if (!PlaneDestroyed(Jahaz, b, i, count, score) and elapsed > 1)
+		{
+			BombardMissiles(Missiles, Msize, Jahaz);
+			elapsed = 0;
+			CT = time(0);
+		}
+		NT = time(0);
+		PReSpawn = NT - PRS;
+		if (count > 100 and (PReSpawn >= 20))
+		{
+			score += 1000;
+			ReSpawnPlane(Jahaz);
+			count = 0;
+			PRS = time(0);
+			PReSpawn = 0;
+		}
+		UpdatePlane(Jahaz, count);
+		UpdatePlayer(p);
+		BulletTouchesEnemy(e, b, i, score);
+
+		UpdateMissiles(Missiles, Msize, Jahaz);
+		if (MissileTouchesPlayer(Missiles, Msize, Jahaz, p))
+		{
+			lives--;
+			initPlayer(p);
+		}
+		if (IsKeyDown(KEY_X))
+			Shoot(p, b[i]), i++;
+		UpdateBullet(b, i);
+		EndDrawing();
+		if (score >= 2000)
+			break;
+	}
+
+	if (score >= 2000)
+	{
+		while (!IsKeyPressed(KEY_ENTER))
+		{
+			if (GetKeyPressed() == KEY_ESCAPE)
+			{
+				break;
+			}
+			BeginDrawing();
+			ClearBackground(BLACK);
+			DrawText("LEVEL 2 CLEARED", 80, 250, 75, RAYWHITE), CT = time(0);
+			EndDrawing();
+		}
+		main3();
+	}
+	else
+	{
+		while (true)
+		{
+			if (GetKeyPressed() == KEY_ESCAPE)
+			{
+				break;
+			}
+			BeginDrawing();
+			ClearBackground(BLACK);
+			DrawText("GAME OVER", 100, 250, 100, RAYWHITE), CT = time(0);
+			EndDrawing();
+		}
+	}
+	return 0;
+}
+
+
+int main()
+{
+	SetTargetFPS(90);
+	InitWindow(ScreenWidth, ScreenHeight, "Metal Slug");
+	Background bg1;
+	bg1.bg = LoadTexture("bg1.png");
+	Background bg2;
+	bg2.bg = LoadTexture("bg2.png");
+	Player p;
+	Bullet b[Capacity]{};
+	BOMB bomb[NoOfEnemies];
+	Enemy e[NoOfEnemies] = { };
+	Plane Jahaz;
+	time_t CT = time(0);
+	time_t temptime;
+	int i = 0, count = 0;
+	int elapsed = 0, PReSpawn = 0, temp = 0;
+	init(bg1, p, b[i], Jahaz, bg2, e);
+	initbomb(e, bomb);
+	Background logo;
+	initlogo(logo);
+	while (!IsKeyPressed(KEY_ENTER))
+	{
+		BeginDrawing();
+		ClearBackground(BLACK);
+		DrawTexture(logo.bg, logo.position.c, logo.position.r, RAYWHITE);
+		DrawText("CLICK ENTER TO CONTINUE.....", 225, 550, 20, RAYWHITE);
+		EndDrawing();
+	}
+	while (lives > 0)
+	{
+		if (GetKeyPressed() == KEY_ESCAPE)
+		{
+			break;
+		}
+		BeginDrawing();
+		ClearBackground(RAYWHITE);
+		MovingBackground(bg1, bg2);
+		MoveEnemy(e);
+		DrawEnemy(e);
+		DrawText(TextFormat("LIVES = %d", lives), 10, 10, 30, RAYWHITE);
+		DrawText(TextFormat("SCORE = %d", score), 10, 45, 30, RAYWHITE);
+
+		DrawTexture(p.p_Texture, p.c_position.c, p.c_position.r, RAYWHITE);
+
+		if (BombtouchesPlayer(p, bomb))
+		{
+			initPlayer(p);
+			initEnemy(e);
+			initbomb(e, bomb);
+			lives--;
+		}
+		UpdatePlayer(p);
+		UpdateBomb(bomb);
+		BulletTouchesEnemy(e, b, i, score);
+		BombDestroy(bomb, e);
+
+		if (EnemytouchesPlayer(e, p))
+		{
+			lives--;
+			initPlayer(p);
+			initEnemy(e);
+		}
+		if (IsKeyDown(KEY_X))
+			Shoot(p, b[i]), i++;
+		UpdateBullet(b, i);
+		EndDrawing();
+		if (score >= 1000)
+			break;
+	}
+
+	if (score >= 1000)
+	{
+		while (!IsKeyPressed(KEY_ENTER))
+		{
+
+			if (GetKeyPressed() == KEY_ESCAPE)
+			{
+				break;
+			}
+			BeginDrawing();
+			ClearBackground(BLACK);
 			DrawText("LEVEL 1 CLEARED", 80, 250, 75, RAYWHITE), CT = time(0);
 			EndDrawing();
 		}
+		main2();
 	}
 	else
 	{
