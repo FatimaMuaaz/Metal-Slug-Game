@@ -31,6 +31,13 @@ struct Enemy
 	Rectangle ColliderE;
 };
 
+struct Alley
+{
+	Pos PositionA;
+	Rectangle Collider;
+	int speedA;
+	Texture2D textureA;
+};
 
 struct Circle
 {
@@ -104,6 +111,20 @@ void initEnemy(Enemy e[])
 	}
 }
 
+void InitAlly(Alley& a, bool& AllyGotShot)
+{
+	a.textureA = LoadTexture("friend.png");
+
+	a.textureA.height = 150, a.textureA.width = 100;
+	a.PositionA.r = ScreenHeight - a.textureA.height,
+		a.PositionA.c = ScreenWidth + 100;
+	a.Collider.height = a.textureA.height - 10;
+	a.Collider.width = a.textureA.width - 10;
+	a.Collider.x = a.PositionA.c + 5;
+	a.Collider.y = a.PositionA.r + 5;
+	AllyGotShot = false;
+}
+
 void init(Background& bg1, Player& p, Bullet& b, Plane& Jahaz, Background& bg2, Enemy e[])
 {
 	bg1.bg.width = ScreenWidth, bg1.bg.height = ScreenHeight;
@@ -132,6 +153,7 @@ void init(Background& bg1, Player& p, Bullet& b, Plane& Jahaz, Background& bg2, 
 	initEnemy(e);
 }
 
+
 void UpdatePlayer(Player& p)
 {
 	if (IsKeyDown(KEY_LEFT) and (p.c_position.c > 0))
@@ -153,6 +175,7 @@ void UpdatePlayer(Player& p)
 	else if (p.c_position.r < (ScreenHeight - p.p_Texture.height))
 		p.c_position.r += 5, p.Collider.y += 5;
 }
+
 void DrawEnemy(Enemy e[])
 {
 	for (int i = 0;i < NoOfEnemies;i++)
@@ -160,6 +183,7 @@ void DrawEnemy(Enemy e[])
 		DrawTexture(e[i].ETexture, e[i].Eposition.c, e[i].Eposition.r, RAYWHITE);
 	}
 }
+
 void MoveEnemy(Enemy e[])
 {
 	for (int i = 0;i < NoOfEnemies;i++)
@@ -335,6 +359,67 @@ void UpdatePlane(Plane& Jahaz, int count)
 	}
 }
 
+void UpdateAlly1(Alley& a)
+{
+	a.PositionA.c -= 1;
+	a.Collider.x -= 1;
+}
+
+void UpdateAlly2(Alley& a, bool& AllyGotShot)
+{
+	a.PositionA.c -= 10;
+	a.Collider.x = a.PositionA.c;
+	if (a.PositionA.c <= 0)
+	{
+		InitAlly(a, AllyGotShot);
+	}
+}
+
+bool BulletTouchesAlley(Alley& a, Bullet b[], int size)
+{
+	Vector2 temp;
+	for (int i = 0; i < size; i++)
+	{
+		temp.x = b[i].position.c;
+		temp.y = b[i].position.r;
+
+		if (CheckCollisionCircleRec(temp, (float)(b[i].C.rad), a.Collider))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void UpdateAlly(Alley& a, Bullet b[], int size, bool& AllyGotShot,int &score)
+{
+	if (BulletTouchesAlley(a, b, size))  // Correct function call
+	{
+		a.textureA = LoadTexture("friend2.png");
+		AllyGotShot = true;
+		a.textureA.height = 150, a.textureA.width = 100;
+		a.PositionA.r = ScreenHeight - a.textureA.height,
+			//a.PositionA.c = ScreenWidth;
+		a.Collider.height = a.textureA.height - 10;
+		a.Collider.width = a.textureA.width - 10;
+		// Load 2nd picture 
+	}
+	else if (a.PositionA.c <= 50)
+	{
+		score += 200;
+		InitAlly(a, AllyGotShot);
+	}
+
+	if (AllyGotShot == true)
+	{
+		UpdateAlly2(a, AllyGotShot);
+	}
+	else
+	{
+		UpdateAlly1(a);
+	}
+}
+
 void BombardMissiles(Missile Missiles[], int& size, Plane Jahaz)
 {
 	srand(time(0));
@@ -476,7 +561,7 @@ void BombDestroy(BOMB bomb[],Enemy e[])
 {
 	for(int i=0;i<NoOfEnemies;i++)
 	{
-		if (bomb[i].r >= ScreenHeight)
+		if (bomb[i].r >= ScreenHeight-50)
 		{
 			initbomb(e, bomb);
 		}
@@ -498,6 +583,15 @@ bool BombtouchesPlayer(Player P,BOMB bomb[])
 	return false;
 }
 
+void initlogo(Background &logo)
+{
+	logo.bg = LoadTexture("MetalSluglogo.png");
+	logo.bg.height = ScreenHeight;
+	logo.bg.width = ScreenWidth;
+	logo.position.c = 0;
+	logo.position.r = 0;
+}
+
 int main()
 {
 	SetTargetFPS(90);
@@ -512,6 +606,9 @@ int main()
 	Missile Missiles[Capacity];
 	Enemy e[NoOfEnemies] = { };
 	Plane Jahaz;
+	Alley a;
+	bool AllyGotShot = false;
+	InitAlly(a, AllyGotShot);
 	time_t CT = time(0);
 	time_t PRS = time(0);
 	time_t temptime;
@@ -519,6 +616,16 @@ int main()
 	int elapsed = 0, PReSpawn = 0, temp = 0, lives = 3;
 	init(bg1, p, b[i], Jahaz, bg2, e);
 	initbomb(e, bomb);
+	Background logo;
+	initlogo(logo);
+	while (!IsKeyPressed(KEY_ENTER))
+	{
+		BeginDrawing();
+		ClearBackground(BLACK);
+		DrawTexture(logo.bg, logo.position.c, logo.position.r, RAYWHITE);
+		DrawText("CLICK ENTER TO CONTINUE.....", 225, 550, 20, RAYWHITE);
+		EndDrawing();
+	}
 	while (lives > 0)
 	{
 		if (GetKeyPressed() == KEY_ESCAPE)
@@ -528,7 +635,9 @@ int main()
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
 		MovingBackground(bg1, bg2);
+		DrawTexture(a.textureA, a.PositionA.c, a.PositionA.r, RAYWHITE);
 		MoveEnemy(e);
+		UpdateAlly(a, b, i, AllyGotShot, score);
 		DrawEnemy(e);
 		DrawText(TextFormat("LIVES = %d", lives), 10, 10, 30, RAYWHITE);
 		DrawText(TextFormat("SCORE = %d", score), 10, 45, 30, RAYWHITE);
@@ -563,9 +672,9 @@ int main()
 		UpdatePlane(Jahaz, count);
 		UpdatePlayer(p);
 		UpdateBomb(bomb);
-		BulletTouchesEnemy(e, b, i,score);
+		BulletTouchesEnemy(e, b, i, score);
 		BombDestroy(bomb, e);
-		
+
 		if (EnemytouchesPlayer(e, p))
 		{
 			lives--;
@@ -597,7 +706,7 @@ int main()
 			}
 			BeginDrawing();
 			ClearBackground(BLACK);
-			DrawText("LEVEL 1 CLEARED", 90, 250, 75, RAYWHITE), CT = time(0);
+			DrawText("LEVEL 1 CLEARED", 80, 250, 75, RAYWHITE), CT = time(0);
 			EndDrawing();
 		}
 	}
@@ -615,6 +724,5 @@ int main()
 			EndDrawing();
 		}
 	}
-
 	return 0;
 }
