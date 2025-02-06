@@ -130,7 +130,7 @@ void InitAlly(Alley& a,bool &AllyGotShot)
 
 	a.textureA.height = 150, a.textureA.width = 100;
 	a.PositionA.r = ScreenHeight - a.textureA.height,
-		a.PositionA.c =ScreenWidth+50;
+		a.PositionA.c = ScreenWidth;
 	a.Collider.height = a.textureA.height - 10;
 	a.Collider.width = a.textureA.width - 10;
 	a.Collider.x = a.PositionA.c + 5;
@@ -337,31 +337,17 @@ void DeleteEnemy(Enemy e[], Bullet b[])
 {
 
 }
-
-void UpdateAlly(Alley& a, Bullet b[], int size, bool& AllyGotShot)
-{
-	if (BulletTouchesAlley(a, b, size))  // Correct function call
-	{
-		AllyGotShot = true;
-		UpdateAlly2(a, AllyGotShot);
-		// Load 2nd picture 
-	}
-	else
-	{
-		UpdateAlly1(a);
-	}
-}
-
 void UpdateAlly1(Alley& a)
 {
-	a.PositionA.c -= 1;  
+	a.PositionA.c -= 1;
+	a.Collider.x -= 1;
 }
 
 void UpdateAlly2(Alley& a, bool& AllyGotShot)
 {
-	a.PositionA.c += 2;  
-
-	if (a.PositionA.c >= ScreenWidth)  
+	a.PositionA.c -= 10;
+	a.Collider.x = a.PositionA.c;
+	if (a.PositionA.c<=0)
 	{
 		InitAlly(a, AllyGotShot);
 	}
@@ -382,6 +368,30 @@ bool BulletTouchesAlley(Alley& a, Bullet b[], int size)
 	}
 	return false;
 }
+
+
+void UpdateAlly(Alley& a, Bullet b[], int size, bool& AllyGotShot)
+{
+	if (BulletTouchesAlley(a, b, size))  // Correct function call
+	{
+		AllyGotShot = true;
+		// Load 2nd picture 
+	}
+	else if(a.PositionA.c<=0)
+	{
+		InitAlly(a, AllyGotShot);
+	}
+	if (AllyGotShot == true)
+	{
+		UpdateAlly2(a, AllyGotShot);
+	}
+	else
+	{
+		UpdateAlly1(a);
+
+	}
+}
+
 
 
 void BombardMissiles(Missile Missiles[], int& size, Plane Jahaz)
