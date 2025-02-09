@@ -762,8 +762,8 @@ int main4()
 {
 	SetTargetFPS(120);
 	lives = 10;
-	InitWindow(ScreenWidth, ScreenHeight, "Metal Slug");
-	InitAudioDevice();
+	//InitWindow(ScreenWidth, ScreenHeight, "Metal Slug");
+	//InitAudioDevice();
 	Background bg1;
 	bg1.bg = LoadTexture("bg1.png");
 	Background bg2;
@@ -907,8 +907,8 @@ int main4()
 int main3()
 {
 	SetTargetFPS(120);
-	InitWindow(ScreenWidth, ScreenHeight, "Metal Slug");
-	InitAudioDevice();
+	//InitWindow(ScreenWidth, ScreenHeight, "Metal Slug");
+	//InitAudioDevice();
 	Background bg1;
 	bg1.bg = LoadTexture("bg1.png");
 	Background bg2;
@@ -1010,6 +1010,7 @@ int main3()
 	}
 	if (score >= 5000)
 	{
+		
 		while (!IsKeyPressed(KEY_ENTER))
 		{
 			if (GetKeyPressed() == KEY_ESCAPE)
@@ -1075,8 +1076,8 @@ int main2()
 {
 	// No enemies only jahaz
 	SetTargetFPS(120);
-	InitWindow(ScreenWidth, ScreenHeight, "Metal Slug");
-	InitAudioDevice();
+	//InitWindow(ScreenWidth, ScreenHeight, "Metal Slug");
+	//InitAudioDevice();
 	Background bg1;
 	bg1.bg = LoadTexture("bg1.png");
 	Background bg2;
@@ -1169,7 +1170,7 @@ int main2()
 			DrawText("LEVEL 2 CLEARED", 75, 250, 70, RAYWHITE), CT = time(0);
 			EndDrawing();
 		}
-		//main3();
+		main3();
 	}
 	else
 	{
@@ -1276,15 +1277,15 @@ int main()
 		if (IsKeyDown(KEY_X))
 			Shoot(p, b[i]), i++;
 		EndDrawing();
-		if (score >= 1000)
+		if (score >= 10000)
 			break;
 	}
 	if (lives == 0)
 	{
 		PlaySound(S.End);
 	}
-
-	if (score >= 1000)
+	
+	if (score >= 10000)
 	{
 		while (!IsKeyPressed(KEY_ENTER))
 		{
@@ -1297,7 +1298,9 @@ int main()
 			UpdateMusicStream(S.Victory);
 			DrawText("LEVEL 1 CLEARED", 80, 250, 75, RAYWHITE), CT = time(0);
 			EndDrawing();
+			
 		}
+		
 		main2();
 	}
 	else
