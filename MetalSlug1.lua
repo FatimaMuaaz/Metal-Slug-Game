@@ -53,14 +53,6 @@ struct Circle
 	float r, c;
 };
 
-//struct Missile
-//{
-//	Texture2D texture;
-//	DIR Direction;
-//	Pos position;
-//	Rectangle Collider;
-//};
-
 struct Bullet
 {
 	Texture2D texture;
@@ -796,17 +788,25 @@ void CreateSounds(GameSounds& S)
 
 }
 
-
+void DrawLives(int& k, Background& l)
+{
+	while (k > 0)
+	{
+		DrawTexture(l.bg, l.position.c, l.position.r, RAYWHITE);
+		k--, l.position.c += l.bg.width;
+	}
+}
 
 int main4()
 {
 	SetTargetFPS(120);
 	lives = 10;
-	//InitWindow(ScreenWidth, ScreenHeight, "Metal Slug");
-	//InitAudioDevice();
 	Background bg1;
 	bg1.bg = LoadTexture("bg1.png");
-	Background bg2;
+	Background bg2, l;
+	l.bg = LoadTexture("lives.png");
+	l.position.r = 10, l.position.c = 120;
+	l.bg.height = 40, l.bg.width = 30;
 	bg2.bg = LoadTexture("bg2.png");
 	Player p;
 	Bullet b[Capacity]{}, bomb[NoOfEnemies]{}, Missiles[Capacity];
@@ -824,6 +824,7 @@ int main4()
 	init4(bg1, p, b[i], Jahaz, bg2, e);
 	initbomb(e, bomb);
 	Background logo;
+	int k = lives;
 	initlogo(logo);
 	while (!IsKeyPressed(KEY_ENTER)) {
 		PrintLogo(logo);
@@ -835,6 +836,8 @@ int main4()
 		if (GetKeyPressed() == KEY_ESCAPE)
 			break;
 
+		k = lives;
+		l.position.c = 120;
 		BeginDrawing();
 		ClearBackground(BLACK);
 		MovingBackground(bg1, bg2);
@@ -844,7 +847,8 @@ int main4()
 		UpdateEnemies(e, Jahaz, count);
 		UpdateAlly(a, b, i, AllyGotShot, score);
 		DrawEnemy(e);
-		DrawText(TextFormat("LIVES = %d", lives), 10, 10, 30, RAYWHITE);
+		DrawLives(k, l);
+		DrawText("LIVES: ", 10, 10, 30, RAYWHITE);
 		DrawText(TextFormat("SCORE = %d", score), 10, 45, 30, RAYWHITE);
 
 		DrawTexture(p.p_Texture, p.c_position.c, p.c_position.r, RAYWHITE);
@@ -951,7 +955,10 @@ int main3()
 	//InitAudioDevice();
 	Background bg1;
 	bg1.bg = LoadTexture("bg1.png");
-	Background bg2;
+	Background bg2, l;
+	l.bg = LoadTexture("lives.png");
+	l.position.r = 10, l.position.c = 120;
+	l.bg.height = 40, l.bg.width = 30;
 	bg2.bg = LoadTexture("bg2.png");
 	Player p;
 	Bullet b[Capacity]{}, bomb[NoOfEnemies]{}, Missiles[Capacity];
@@ -968,6 +975,7 @@ int main3()
 	int elapsed = 0, PReSpawn = 0, temp = 0;
 	init3(bg1, p, b[i], Jahaz, bg2, e);
 	initbomb(e, bomb);
+	int k = lives;
 	Background logo;
 	initlogo(logo);
 	while (!IsKeyPressed(KEY_ENTER)) {
@@ -979,6 +987,8 @@ int main3()
 		if (GetKeyPressed() == KEY_ESCAPE)
 			break;
 
+		k = lives;
+		l.position.c = 120;
 		BeginDrawing();
 		ClearBackground(BLACK);
 		MovingBackground(bg1, bg2);
@@ -988,9 +998,9 @@ int main3()
 		UpdateEnemies(e, Jahaz, count);
 		UpdateAlly(a, b, i, AllyGotShot, score);
 		DrawEnemy(e);
-		DrawText(TextFormat("LIVES = %d", lives), 10, 10, 30, RAYWHITE);
+		DrawText("LIVES: ", 10, 10, 30, RAYWHITE);
 		DrawText(TextFormat("SCORE = %d", score), 10, 45, 30, RAYWHITE);
-
+		DrawLives(k, l);
 		DrawTexture(p.p_Texture, p.c_position.c, p.c_position.r, RAYWHITE);
 
 		time_t NT = time(0);
@@ -1118,7 +1128,10 @@ int main2()
 	SetTargetFPS(120);
 	Background bg1;
 	bg1.bg = LoadTexture("bg1.png");
-	Background bg2;
+	Background bg2,l;
+	l.bg = LoadTexture("lives.png");
+	l.position.r = 10, l.position.c = 120;
+	l.bg.height = 40, l.bg.width = 30;
 	bg2.bg = LoadTexture("bg2.png");
 	Player p;
 	Bullet b[Capacity]{}, bomb[NoOfEnemies]{}, Missiles[Capacity];
@@ -1137,20 +1150,23 @@ int main2()
 		PrintLogo(logo);
 		UpdateMusicStream(S.background);
 	}
+	int k = lives;
 	while (lives > 0)
 	{
 		if (GetKeyPressed() == KEY_ESCAPE)
 			break;
 
+		k = lives;
+		l.position.c = 120;
 		BeginDrawing();
 		ClearBackground(BLACK);
 		MovingBackground(bg1, bg2);
 		UpdateMusicStream(S.background);
 		CreateSounds(S);
 		UpdateEnemies(e, Jahaz, count);
-		DrawText(TextFormat("LIVES = %d", lives), 10, 10, 30, RAYWHITE);
+		DrawLives(k, l);
+		DrawText("LIVES:" , 10, 10, 30, RAYWHITE);
 		DrawText(TextFormat("SCORE = %d", score), 10, 45, 30, RAYWHITE);
-
 		DrawTexture(p.p_Texture, p.c_position.c, p.c_position.r, RAYWHITE);
 
 		time_t NT = time(0);
@@ -1245,7 +1261,6 @@ void init1(Background& bg1, Player& p, Bullet& b, Background& bg2, Enemy e[])
 	initEnemy(e);
 }
 
-
 int main()
 {
 	SetTargetFPS(120);
@@ -1253,7 +1268,10 @@ int main()
 	InitAudioDevice();
 	Background bg1;
 	bg1.bg = LoadTexture("bg1.png");
-	Background bg2;
+	Background bg2, l;
+	l.bg = LoadTexture("lives.png");
+	l.position.r = 10, l.position.c = 120;
+	l.bg.height = 40, l.bg.width = 30;
 	bg2.bg = LoadTexture("bg2.png");
 	Player p;
 	Bullet b[Capacity]{}, bomb[NoOfEnemies]{}, Missiles[Capacity];
@@ -1273,12 +1291,13 @@ int main()
 		PrintLogo(logo);
 		UpdateMusicStream(S.background);
 	}
-
+	int k = lives;
 	while (lives > 0)
 	{
 		if (GetKeyPressed() == KEY_ESCAPE)
 			break;
-
+		k = lives;
+		l.position.c = 120;
 		BeginDrawing();
 		ClearBackground(BLACK);
 		MovingBackground(bg1, bg2);
@@ -1286,7 +1305,8 @@ int main()
 		CreateSounds(S);
 		UpdateEnemies(e, Jahaz, count);
 		DrawEnemy(e);
-		DrawText(TextFormat("LIVES = %d", lives), 10, 10, 30, RAYWHITE);
+		DrawLives(k, l);
+		DrawText("LIVES: ", 10, 10, 30, RAYWHITE);
 		DrawText(TextFormat("SCORE = %d", score), 10, 45, 30, RAYWHITE);
 
 		DrawTexture(p.p_Texture, p.c_position.c, p.c_position.r, RAYWHITE);
@@ -1338,7 +1358,6 @@ int main()
 			EndDrawing();
 
 		}
-
 		main2();
 	}
 	else
